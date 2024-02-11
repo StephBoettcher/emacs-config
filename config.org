@@ -1,0 +1,456 @@
+#+TITLE: Steph's GNU Emacs config
+#+AUTHOR: Stephane Boettcher
+#+DESCRIPTION: Stephane Boettcher's personal Emacs config.
+#+STARTUP: showeverything
+#+OPTIONS: toc:2
+
+* TABLE OF CONTENTS :toc:
+- [[#scripts][SCRIPTS]]
+  - [[#add-scripts-directory-to-path][Add scripts directory to path]]
+  - [[#source-the-scripts][Source the scripts]]
+- [[#fonts][FONTS]]
+  - [[#set-font-faces][Set font faces]]
+  - [[#set-text-size-adjustment-key-bindings][Set text size adjustment key bindings]]
+- [[#gui-tweaks][GUI TWEAKS]]
+  - [[#open-emacs-in-fullscreen-mode-on-launch][Open Emacs in fullscreen mode on launch]]
+  - [[#disable-menubar-toolbar-and-scrollbar][Disable menubar, toolbar and scrollbar]]
+  - [[#display-line-numbers-and-truncated-lines][Display line numbers and truncated lines]]
+  - [[#delete-highlighted-text-by-typing][Delete highlighted text by typing]]
+  - [[#enable-parenthesis-pairing][Enable parenthesis pairing]]
+  - [[#show-changes-if-the-file-has-changed][Show changes if the file has changed]]
+- [[#theme][THEME]]
+- [[#all-the-icons][ALL THE ICONS]]
+- [[#beacon][BEACON]]
+- [[#dashboard][DASHBOARD]]
+- [[#diminish][DIMINISH]]
+- [[#git-time-machine][GIT TIME MACHINE]]
+- [[#golden-ratio][GOLDEN RATIO]]
+- [[#ivy-counsel][IVY (COUNSEL)]]
+- [[#magit][MAGIT]]
+- [[#neotree][NEOTREE]]
+- [[#org-mode][ORG MODE]]
+  - [[#enable-table-of-contents][Enable table of contents]]
+  - [[#enable-org-bullets][Enable org bullets]]
+  - [[#enable-org-tempo][Enable org tempo]]
+- [[#pdf-tools][PDF TOOLS]]
+- [[#projectile][PROJECTILE]]
+- [[#rainbow-mode][RAINBOW MODE]]
+- [[#shells-and-terminals][SHELLS AND TERMINALS]]
+  - [[#eshell][Eshell]]
+  - [[#vterm][Vterm]]
+  - [[#vterm-toggle][Vterm-Toggle]]
+- [[#spacious-padding][SPACIOUS-PADDING]]
+- [[#sudo-edit][SUDO-EDIT]]
+- [[#tldr][TLDR]]
+- [[#vertico-posframe][VERTICO-POSFRAME]]
+- [[#which-key][WHICH-KEY]]
+
+* SCRIPTS
+** Add scripts directory to path
+#+begin_src emacs-lisp
+  (add-to-list 'load-path "~/.config/emacs/scripts/")
+#+end_src
+
+** Source the scripts
+#+begin_src emacs-lisp
+  (require 'elpaca-setup)
+  (require 'unbound)
+#+end_src
+
+* FONTS
+Defining the various fonts that Emacs will use.
+
+** Set font faces
+#+begin_src emacs-lisp
+  (set-face-attribute 'default nil
+		      :font "JetBrains Mono"
+		      :height 180
+		      :weight 'medium)
+  (set-face-attribute 'variable-pitch nil
+		      :font "SF Pro Display"
+		      :height 180
+		      :weight 'medium)
+  (set-face-attribute 'fixed-pitch nil
+		      :font "JetBrains Mono"
+		      :height 180
+		      :weight 'medium)
+
+  ;; Make commented text and keywords italics.
+  ;; The font must have an italic face available.
+  (set-face-attribute 'font-lock-comment-face nil
+		      :slant 'italic)
+  (set-face-attribute 'font-lock-keyword-face nil
+		      :slant 'italic)
+
+  ;; Adjust line spacing
+  (setq-default line-spacing 0.12)
+
+#+end_src
+
+** Set text size adjustment key bindings
+#+begin_src emacs-lisp
+(global-set-key (kbd "C-=") 'text-scale-increase)
+(global-set-key (kbd "C--") 'text-scale-decrease)
+(global-set-key (kbd "<C-wheel-up>") 'text-scale-increase)
+(global-set-key (kbd "<C-wheel-down>") 'text-scale-decrease)
+#+end_src
+
+* GUI TWEAKS
+** Open Emacs in fullscreen mode on launch
+#+begin_src emacs-lisp
+  (setq ns-use-native-fullscreen t) ;; Use MacOs' native fullscreen
+  (add-to-list 'initial-frame-alist '(fullscreen . fullscreen)) ;; Force fullscreen window on open
+  ;(add-to-list 'initial-frame-alist '(fullscreen . maximized)) ;; Force maximized window on open
+#+end_src
+
+** Disable menubar, toolbar and scrollbar
+#+begin_src emacs-lisp
+  (menu-bar-mode -1)
+  (tool-bar-mode -1)
+  (scroll-bar-mode -1)
+#+end_src
+
+** Display line numbers and truncated lines
+#+begin_src emacs-lisp
+  (global-display-line-numbers-mode 1)
+  (global-visual-line-mode t)
+#+end_src
+
+** Delete highlighted text by typing
+#+begin_src emacs-lisp
+  (delete-selection-mode 1)
+#+end_src
+
+** Enable parenthesis pairing
+#+begin_src emacs-lisp
+  (electric-pair-mode 1)
+#+end_src
+
+** Show changes if the file has changed
+#+begin_src emacs-lisp
+(global-auto-revert-mode t)
+#+end_src
+
+* THEME
+Sets a custom theme.
+#+begin_src emacs-lisp
+  (add-to-list 'custom-theme-load-path "~/.config/emacs/themes/")
+  (use-package doom-themes
+  :config
+  (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
+        doom-themes-enable-italic t) ; if nil, italics is universally disabled
+  (load-theme 'doom-one t)
+  (doom-themes-neotree-config) ;; Enable custom neotree theme (all-the-icons must be installed!)
+  (doom-themes-org-config)) ;; Corrects (and improves) org-mode's native fontification.
+#+end_src
+
+* ALL THE ICONS
+An icon set that can be used with dashboard, dired, ibuffer and other Emacs programs.
+Run all-the-icons-install-fonts for it to work properly.
+  
+#+begin_src emacs-lisp
+(use-package all-the-icons
+  :ensure t
+  :if (display-graphic-p))
+
+(use-package all-the-icons-dired
+  :hook (dired-mode . (lambda () (all-the-icons-dired-mode t))))
+#+end_src
+
+* BEACON
+Highlight the line the cursor is on when scrolling the page.
+#+begin_src emacs-lisp
+  (use-package beacon
+    :ensure t
+    :diminish
+    :config (beacon-mode 1))
+#+end_src
+
+* DASHBOARD
+An extensible startup screen showing recent files, bookmarks, agenda items and an Emacs banner.
+
+#+begin_src emacs-lisp
+  (use-package dashboard
+    :ensure t 
+    :init
+    (setq initial-buffer-choice 'dashboard-open)
+    (setq dashboard-set-heading-icons t)
+    (setq dashboard-set-file-icons t)
+    (setq dashboard-banner-logo-title "Emacs Is More Than A Text Editor!")
+    (setq dashboard-startup-banner 'logo) ;; use standard emacs logo as banner
+    ;;(setq dashboard-startup-banner (concat user-emacs-directory "images/dtmacs-logo.png"))  ;; use custom image as banner
+    (setq dashboard-center-content t) ;; set to 'nil' for aligned-left content
+    (setq dashboard-items '((recents . 5)
+                            (agenda . 5 )
+                            (bookmarks . 3)
+                            (projects . 3)
+                            (registers . 3)))
+
+    :config
+    (dashboard-modify-heading-icons '((recents . "file-text")
+                              (bookmarks . "book")))
+    (dashboard-setup-startup-hook))
+#+end_src
+
+* DIMINISH
+Adds a :diminish option in the configuration file for packages. Using this option will hide the minor mode descriptor from the minibuffer.
+#+begin_src emacs-lisp
+  (use-package diminish)
+#+end_src
+
+* GIT TIME MACHINE
+Adds the ability to navigate between commits and see the file's state for the given commit.
+#+begin_src emacs-lisp
+  (use-package git-timemachine)
+#+end_src
+
+* GOLDEN RATIO
+Changes the window size to give more space to the active buffer.
+#+begin_src emacs-lisp
+  (use-package golden-ratio
+    :ensure t
+    :hook (after-init . golden-ratio-mode)
+    :custom (golden-ratio-exclude-modes '(occur-mode)))
+#+end_src
+
+* IVY (COUNSEL)
+A generic completion mechanism for Emacs. Counsel includes a collection of Ivy-enhanced versions of common Emacs commands. Ivy-rich allows adding descriptions alongside the commands in M-x.
+
+#+begin_src emacs-lisp
+(use-package counsel
+  :after ivy
+  :diminish
+  :config 
+    (counsel-mode)
+    (setq ivy-initial-inputs-alist nil)) ;; removes starting ^ regex in M-x
+
+(use-package ivy
+  :bind
+  ;; ivy-resume resumes the last Ivy-based completion.
+  (("C-c C-r" . ivy-resume)
+   ("C-x B" . ivy-switch-buffer-other-window))
+  :diminish
+  :custom
+  (setq ivy-use-virtual-buffers t)
+  (setq ivy-count-format "(%d/%d) ")
+  (setq enable-recursive-minibuffers t)
+  :config
+  (ivy-mode))
+
+(use-package all-the-icons-ivy-rich
+  :ensure t
+  :init (all-the-icons-ivy-rich-mode 1))
+
+(use-package ivy-rich
+  :after ivy
+  :ensure t
+  :init (ivy-rich-mode 1) ;; this gets us descriptions in M-x.
+  :custom
+  (ivy-virtual-abbreviate 'full
+   ivy-rich-switch-buffer-align-virtual-buffer t
+   ivy-rich-path-style 'abbrev)
+  :config
+  (ivy-set-display-transformer 'ivy-switch-buffer))
+
+#+end_src
+
+* MAGIT
+The best git client in the word.
+#+begin_src emacs-lisp
+  (use-package transient) ;; required package for magit
+  (use-package magit)
+#+end_src
+
+* NEOTREE
+Displays a file structure of the location of the current file.
+#+begin_src emacs-lisp
+  (use-package neotree
+  :bind ("<f5>" . neotree-toggle)
+  :config
+  (setq neo-smart-open t
+        neo-show-hidden-files t
+        neo-window-width 55
+        neo-window-fixed-size nil
+        inhibit-compacting-font-caches t
+        projectile-switch-project-action 'neotree-projectile-action) 
+        ;; truncate long file names in neotree
+        (add-hook 'neo-after-create-hook
+           #'(lambda (_)
+               (with-current-buffer (get-buffer neo-buffer-name)
+                 (setq truncate-lines t)
+                 (setq word-wrap nil)
+                 (make-local-variable 'auto-hscroll-mode)
+                 (setq auto-hscroll-mode nil)))))
+#+end_src
+
+* ORG MODE
+** Enable table of contents
+#+begin_src emacs-lisp
+  (use-package toc-org
+    :commands toc-org-enable
+    :init
+    (add-hook 'org-mode-hook 'toc-org-enable)
+    (add-hook 'org-mode-hook 'org-indent-mode))
+#+end_src
+
+** Enable org bullets
+Replaces asterisks with bullet points in org mode.
+#+begin_src emacs-lisp
+  (use-package org-bullets)
+  (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
+#+end_src
+
+** Enable org tempo
+Adds shorthands for blocks. Type one of the examples below followed with TAB to expand into a block.
+| Typing the below + TAB | Expands to ...                          |
+|------------------------+-----------------------------------------|
+| <a                     | '#+BEGIN_EXPORT ascii' … '#+END_EXPORT  |
+| <c                     | '#+BEGIN_CENTER' … '#+END_CENTER'       |
+| <C                     | '#+BEGIN_COMMENT' … '#+END_COMMENT'     |
+| <e                     | '#+BEGIN_EXAMPLE' … '#+END_EXAMPLE'     |
+| <E                     | '#+BEGIN_EXPORT' … '#+END_EXPORT'       |
+| <h                     | '#+BEGIN_EXPORT html' … '#+END_EXPORT'  |
+| <l                     | '#+BEGIN_EXPORT latex' … '#+END_EXPORT' |
+| <q                     | '#+BEGIN_QUOTE' … '#+END_QUOTE'         |
+| <s                     | '#+BEGIN_SRC' … '#+END_SRC'             |
+| <v                     | '#+BEGIN_VERSE' … '#+END_VERSE'         |
+
+#+begin_src emacs-lisp
+  (require 'org-tempo)
+#+end_src
+
+* PDF TOOLS
+A replacement of DocView to view and edit PDF files inside Emacs.
+#+begin_src emacs-lisp
+  (use-package pdf-tools
+    :defer t
+    :commands (pdf-loader-install)
+    :mode "\\.pdf\\'"
+    :init (pdf-loader-install)
+    :config (add-to-list 'revert-without-query ".pdf"))
+  (add-hook 'pdf-view-mode-hook #'(lambda () (interactive) (display-line-numbers-mode -1)))
+#+end_src
+
+* PROJECTILE
+[[https://github.com/bbatsov/projectile][Projectile]] is a project interaction library for Emacs.
+
+#+begin_src emacs-lisp
+  (use-package projectile
+    :diminish
+    :config
+    (projectile-mode 1))
+#+end_src
+
+* RAINBOW MODE
+Previews a color from a hex color code.
+#+begin_src emacs-lisp
+  (use-package rainbow-mode
+    :diminish
+    :hook org-mode prog-mode)
+#+end_src
+
+* SHELLS AND TERMINALS
+** Eshell
+Eshell is an Emacs 'shell' that is written in Elisp.
+
+#+begin_src emacs-lisp
+(use-package eshell-syntax-highlighting
+  :after esh-mode
+  :config
+  (eshell-syntax-highlighting-global-mode +1))
+
+;; eshell-syntax-highlighting -- adds fish/zsh-like syntax highlighting.
+;; eshell-rc-script -- your profile for eshell; like a bashrc for eshell.
+;; eshell-aliases-file -- sets an aliases file for the eshell.
+  
+(setq eshell-aliases-file (concat user-emacs-directory "eshell/aliases")
+      eshell-history-size 5000
+      eshell-buffer-maximum-lines 5000
+      eshell-hist-ignoredups t
+      eshell-scroll-to-bottom-on-input t
+      eshell-destroy-buffer-when-process-dies t
+      eshell-visual-commands'("bash" "fish" "htop" "ssh" "top" "zsh"))
+#+end_src
+
+** Vterm
+A terminal emulator within Emacs. 'shell-file-name' sets the shell to be used. By default, the shell is set to 'fish' but it can be changed to 'bash' or 'zsh'.
+
+#+begin_src emacs-lisp
+(setq vterm-always-compile-module t)
+(use-package vterm
+  :config
+  (setq shell-file-name "/bin/sh"
+        vterm-max-scrollback 5000))
+#+end_src
+
+** Vterm-Toggle 
+[[https://github.com/jixiuf/vterm-toggle][vterm-toggle]] toggles between the vterm buffer and the current buffer.
+
+#+begin_src emacs-lisp
+(use-package vterm-toggle
+  :after vterm
+  :config
+  (setq vterm-toggle-fullscreen-p nil)
+  (setq vterm-toggle-scope 'project)
+  (add-to-list 'display-buffer-alist
+               '((lambda (buffer-or-name _)
+                     (let ((buffer (get-buffer buffer-or-name)))
+                       (with-current-buffer buffer
+                         (or (equal major-mode 'vterm-mode)
+                             (string-prefix-p vterm-buffer-name (buffer-name buffer))))))
+                  (display-buffer-reuse-window display-buffer-at-bottom)
+                  ;;(display-buffer-reuse-window display-buffer-in-direction)
+                  ;;display-buffer-in-direction/direction/dedicated is added in emacs27
+                  ;;(direction . bottom)
+                  ;;(dedicated . t) ;dedicated is supported in emacs27
+                  (reusable-frames . visible)
+                  (window-height . 0.3))))
+#+end_src
+
+* SPACIOUS-PADDING
+Adds padding around the minibuffer.
+#+begin_src emacs-lisp
+  (use-package spacious-padding
+    :ensure t
+    :hook (after-init . spacious-padding-mode))
+#+end_src
+
+* SUDO-EDIT
+Gives the ability to open a file with sudo privileges or edit an opened file with sudo privileges. 
+#+begin_src emacs-lisp
+  (use-package sudo-edit)
+#+end_src
+
+* TLDR
+Gives a minimalistic overview of commands.
+#+begin_src emacs-lisp
+  (use-package tldr)
+#+end_src
+
+* VERTICO-POSFRAME
+Shows the minibuffer as a centered popup.
+#+begin_src emacs-lisp
+  
+
+#+end_src
+
+* WHICH-KEY
+#+begin_src emacs-lisp
+  (use-package which-key
+    :init
+      (which-key-mode 1)
+    :diminish
+    :config
+    (setq which-key-side-window-location 'bottom
+          which-key-sort-order #'which-key-key-order-alpha
+          which-key-sort-uppercase-first nil
+          which-key-add-column-padding 1
+          which-key-max-display-columns nil
+          which-key-min-display-lines 6
+          which-key-side-window-slot -10
+          which-key-side-window-max-height 0.25
+          which-key-idle-delay 0.8
+          which-key-max-description-length 25
+          which-key-allow-imprecise-window-fit nil
+          which-key-separator " → "))
+#+end_src
